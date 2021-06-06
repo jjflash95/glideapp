@@ -12,9 +12,13 @@ def error_response(status_code, message=None):
     return response
 
 
-def not_found(message):
-    return error_response(404, message)
+def bad_request():
+    return error_response(400, 'Bad request')
 
 
-def internal_error(message):
-    return error_response(500, message)
+def not_found():
+    return error_response(404, 'Resource not found')
+
+
+def internal_error():
+    return error_response(500, 'Internal error')

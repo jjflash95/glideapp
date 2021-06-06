@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import request
 from flask import jsonify
-from utils import not_found, internal_error
+from utils import bad_request, not_found, internal_error
 from services.services import Services
 
 
@@ -14,24 +14,24 @@ MAX_LIMIT = 1000
 
 services = Services()
 
+app.register_error_handler(500, internal_error)
+app.register_error_handler(400, bad_request)
+
 
 @app.route("/api/employees")
 def list_employees():
-    try:
-        employees = services.get('employee')
-        limit = abs(request.args.get('limit', DEFAULT_LIMIT, type=int))
-        offset = abs(request.args.get('offset', DEFAULT_OFFSET, type=int))
-        expand = request.args.getlist('expand')
+    employees = services.get('employee')
+    limit = abs(request.args.get('limit', DEFAULT_LIMIT, type=int))
+    offset = abs(request.args.get('offset', DEFAULT_OFFSET, type=int))
+    expand = request.args.getlist('expand')
 
-        if limit > MAX_LIMIT or limit < 0:
-            limit = MAX_LIMIT
+    if limit > MAX_LIMIT or limit < 0:
+        limit = MAX_LIMIT
 
-        _employees = employees.all(limit, offset)
-        _employees = employees.expand(_employees, expand)
+    _employees = employees.all(limit, offset)
+    _employees = employees.expand(_employees, expand)
 
-        return jsonify(_employees)
-    except Exception:
-        return internal_error('could not retrieve employees')
+    return jsonify(_employees)
 
 
 @app.route("/api/employees/<employee_id>")
