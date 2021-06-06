@@ -15,7 +15,6 @@ class Services:
         eservice.registerhook('superdepartment', dservice.get)
         eservice.registerhook('office', oservice.get)
 
-        
         self.services = {
             'employee': eservice,
             'department': dservice,

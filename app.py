@@ -1,32 +1,28 @@
-from flask import Flask
-from flask import request
-from flask import jsonify
-from utils import bad_request, not_found, internal_error
+from flask import Flask, jsonify, request
 from services.services import Services
+from utils import bad_request, internal_error, not_found
 
 
 app = Flask(__name__)
 app.debug = True
 
-DEFAULT_LIMIT = 100
-DEFAULT_OFFSET = 0
-MAX_LIMIT = 1000
-
-services = Services()
-
 app.register_error_handler(500, internal_error)
 app.register_error_handler(400, bad_request)
+
+services = Services()
 
 
 @app.route("/api/employees")
 def list_employees():
     employees = services.get('employee')
-    limit = abs(request.args.get('limit', DEFAULT_LIMIT, type=int))
-    offset = abs(request.args.get('offset', DEFAULT_OFFSET, type=int))
+    limit = request.args.get('limit', type=int)
+    offset = request.args.get('offset', type=int)
     expand = request.args.getlist('expand')
 
-    if limit > MAX_LIMIT or limit < 0:
-        limit = MAX_LIMIT
+    if limit < 0:
+        limit = 0
+    if offset < 0:
+        offset = 0
 
     _employees = employees.all(limit, offset)
     _employees = employees.expand(_employees, expand)
@@ -43,7 +39,7 @@ def show_employee(employee_id):
     employee = employees.expand(employee, expand)
 
     if not employee:
-        return not_found('could not find employee: {}'.format(employee_id))
+        return not_found()
 
     return jsonify(employee)
 

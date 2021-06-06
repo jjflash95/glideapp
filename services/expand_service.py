@@ -29,10 +29,10 @@ class ExpandService:
 
         key, expand = self.getcurrent(expand)
         fetchkeys = self.getids(key, data)
-        
+
         if not fetchkeys:
             return data
-        
+
         hook = self.gethook(key)
         newdata = hook(fetchkeys)
         result = self._expand(newdata, expand)
@@ -46,7 +46,6 @@ class ExpandService:
 
         return data
 
-        
     def expand(self, data, expansions=None):
         if not data:
             return data
