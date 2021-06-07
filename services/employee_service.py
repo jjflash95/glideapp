@@ -1,5 +1,3 @@
-import os
-
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -9,13 +7,16 @@ from services.expand_service import ExpandService
 
 
 class EmployeeService(ExpandService):
-    def __init__(self):
+    def __init__(self, url):
         super(EmployeeService, self).__init__()
 
-        self.url = os.getenv('EMPLOYEES_API')
+        self.url = url
         self.http = self.buildclient()
 
     def buildclient(self, max_attempts=5):
+        """
+        Retry up to <max_attempts> times on codes <status_forcelist>
+        """
         retry_strategy = Retry(
             total=max_attempts,
             status_forcelist=[429, 500, 502, 503, 504],
@@ -26,6 +27,7 @@ class EmployeeService(ExpandService):
         http = requests.Session()
         http.mount("https://", adapter)
         http.mount("http://", adapter)
+
         return http
 
     def fetch(self, endpoint, params=None):
@@ -44,17 +46,16 @@ class EmployeeService(ExpandService):
         if not offset or offset < 0:
             offset = DEFAULT_OFFSET
 
-        params = {
-            'limit': limit,
-            'offset': offset,
-        }
+        params = {}
+        params['limit'] = limit
+        params['offset'] = offset
 
         return self.fetch('/employees', params=params)
 
     def get(self, employee_id):
+        """Support one or multiple ids in int or array format"""
         if not type(employee_id) == list:
             employee_id = [employee_id]
-
         params = {'id': eid for eid in employee_id}
 
         return self.fetch('/employees', params=params)

@@ -1,13 +1,11 @@
 from flask import Flask, jsonify, request
 from services.services import Services
-from utils import bad_request, internal_error, not_found
+from services.expand_service import MissingHookException
+from utils import bad_hook, bad_request, internal_error, not_found
 
 
 app = Flask(__name__)
 app.debug = True
-
-app.register_error_handler(500, internal_error)
-app.register_error_handler(400, bad_request)
 
 services = Services()
 
@@ -18,14 +16,15 @@ def list_employees():
     limit = request.args.get('limit', type=int)
     offset = request.args.get('offset', type=int)
     expand = request.args.getlist('expand')
-
-    if limit < 0:
-        limit = 0
-    if offset < 0:
-        offset = 0
-
     _employees = employees.all(limit, offset)
-    _employees = employees.expand(_employees, expand)
+
+    limit = limit if limit and limit >= 0 else 0
+    offset = offset if offset and offset >= 0 else 0
+
+    try:
+        _employees = employees.expand(_employees, expand)
+    except MissingHookException as e:
+        return bad_hook(e)
 
     return jsonify(_employees)
 
@@ -36,10 +35,14 @@ def show_employee(employee_id):
     expand = request.args.getlist('expand')
     employees = services.get('employee')
     employee = employees.get(employee_id)
-    employee = employees.expand(employee, expand)
 
     if not employee:
-        return not_found()
+        return not_found("Employee {} not found".format(employee_id))
+
+    try:
+        employee = employees.expand(employee, expand)
+    except MissingHookException as e:
+        return bad_hook(e)
 
     return jsonify(employee)
 

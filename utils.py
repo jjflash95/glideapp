@@ -12,13 +12,18 @@ def error_response(status_code, message=None):
     return response
 
 
-def bad_request():
-    return error_response(400, 'Bad request')
+
+def bad_request(message):
+    return error_response(400, message)
 
 
-def not_found():
-    return error_response(404, 'Resource not found')
+def not_found(message):
+    return error_response(404, message)
 
 
-def internal_error():
-    return error_response(500, 'Internal error')
+def internal_error(message):
+    return error_response(500, message)
+
+
+def bad_hook(hook):
+    bad_request("Expand \'{}\' is not supported".format(hook))

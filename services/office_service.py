@@ -1,15 +1,14 @@
 import json
-import os
 from services.expand_service import ExpandService
 
 
 class OfficeService(ExpandService):
-    def __init__(self):
+    def __init__(self, url):
         super(OfficeService, self).__init__()
-        self.path = os.getenv('OFFICES_FILE')
+        self.url = url
 
     def fetch(self, url=None, params=None):
-        with open(self.path, 'r') as f:
+        with open(self.url, 'r') as f:
             data = json.loads(f.read())
             offices = {office.get('id'): office for office in data}
         return offices

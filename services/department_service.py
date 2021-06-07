@@ -1,15 +1,14 @@
 import json
-import os
 from services.expand_service import ExpandService
 
 
 class DepartmentService(ExpandService):
-    def __init__(self):
+    def __init__(self, url):
         super(DepartmentService, self).__init__()
-        self.path = os.getenv('DEPARTMENTS_FILE')
+        self.url = url
 
     def fetch(self, url=None, params=None):
-        with open(self.path, 'r') as f:
+        with open(self.url, 'r') as f:
             data = json.loads(f.read())
             departments = {dept.get('id'): dept for dept in data}
         return departments
